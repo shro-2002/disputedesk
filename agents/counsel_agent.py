@@ -2,6 +2,7 @@
 
 import logging
 import threading
+import time
 
 from agents import text
 from agents.common import AGENTS, db, make_client, post, run_forever
@@ -48,7 +49,10 @@ class Counsel:
         if disposition.outcome == Outcome.REJECT:
             body, by_llm = f"No representment: {disposition.reason}", False
         else:
+            started = time.monotonic()
             body, by_llm = counsel.draft_rebuttal(dispute, ce3)
+            log.info("draft %s source=%s latency=%.1fs", dispute_id, "claude" if by_llm else "template",
+                     time.monotonic() - started)
         orch.save_rebuttal(conn, dispute_id, body, by_llm)
         self.done.add(dispute_id)
         post(self.client, text.counsel_post(dispute_id, counsel.recommendation(disposition), body, by_llm,

@@ -95,10 +95,19 @@ def template_rebuttal(dispute: Dispute, ce3: CE3Result) -> str:
             f"This shows the transaction was made by the legitimate cardholder. We request the chargeback be reversed.")
 
 
+_SUBMITTER_MENTION = re.compile(r"@submitter\b", re.I)
+
+
+def scrub_mentions(text: str) -> str:
+    """An agent post containing "@submitter" reads as an agent instructing the gateway, which Switch refuses
+    in the room. Model output is never trusted to avoid it, so rewrite deterministically."""
+    return _SUBMITTER_MENTION.sub("the submitter role", text)
+
+
 def draft_rebuttal(dispute: Dispute, ce3: CE3Result) -> tuple[str, bool]:
     """Returns (text, written_by_llm)."""
     text = _ask(DRAFT_SYSTEM, evidence_facts(dispute, ce3), DRAFT_MAX_TOKENS, "medium")
-    return (text, True) if text else (template_rebuttal(dispute, ce3), False)
+    return (scrub_mentions(text), True) if text else (template_rebuttal(dispute, ce3), False)
 
 
 def recommendation(disposition: Disposition) -> str:

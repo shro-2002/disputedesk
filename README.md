@@ -100,7 +100,7 @@ Requires Python ≥ 3.10 and `make`. Logic and tests need nothing else:
 ```bash
 cp .env.example .env
 make setup        # venv, pinned deps, generates AUDIT_HMAC_KEY, seeds demo cases A–E
-make test         # 343 tests, no network or API key
+make test         # 344 tests, no network or API key
 ```
 
 For the live Switch room you also need Docker. On Apple Silicon, the Mattermost image is amd64-only, so give Docker Rosetta, e.g. `colima start switch --vm-type vz --vz-rosetta`. You also need `oras`.

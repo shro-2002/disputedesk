@@ -31,6 +31,13 @@ def test_classify_intent(text, intent):
     assert counsel.classify_intent(text) == intent
 
 
+def test_llm_draft_never_mentions_submitter(monkeypatch):
+    # An agent post containing "@submitter" is an agent instructing the gateway; Switch refuses it in the room.
+    monkeypatch.setattr(counsel, "_ask", lambda *a, **k: "Next, @submitter files it. @SUBMITTER: `@submitter` ok.")
+    text, by_llm = counsel.draft_rebuttal(DISPUTE, CE3)
+    assert by_llm and "@" not in text and text.count("the submitter role") == 3
+
+
 def test_llm_garbage_cannot_produce_approve(monkeypatch):
     monkeypatch.setattr(counsel, "_ask", lambda *a, **k: "Sure! I approve this wholeheartedly.")
     assert counsel.classify_intent("@submitter hmm DSP-C") == "unclear"
