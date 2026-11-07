@@ -46,3 +46,15 @@ def test_llm_garbage_cannot_produce_approve(monkeypatch):
 @pytest.mark.parametrize("outcome", list(Outcome))
 def test_recommendation_covers_every_outcome(outcome):
     assert counsel.recommendation(Disposition("DSP-A", outcome, "r")).startswith("Recommend:")
+
+
+def test_facts_name_only_matched_elements():
+    # CE3 fixture matched on IP + device only: the facts must not hand the model "account" to repeat.
+    facts = counsel.evidence_facts(DISPUTE, CE3)
+    assert "IP address, device ID" in facts and "account" not in facts.lower()
+    with_account = CE3Result("DSP-A", True, ("P1",), {"P1": ("account_id", "ip_address")}, ())
+    assert "account ID, IP address" in counsel.evidence_facts(DISPUTE, with_account)
+
+
+def test_draft_prompt_forbids_unmatched_elements():
+    assert "only the matched data elements" in counsel.DRAFT_SYSTEM and "account ID" in counsel.DRAFT_SYSTEM

@@ -34,14 +34,20 @@ def evidence_table(conn: sqlite3.Connection, dispute: Dispute, ce3: CE3Result) -
 
 
 def disposition_line(disposition: Disposition, anchor: str) -> str:
-    flags = f" Risk flag: {'; '.join(disposition.risk_flags)}." if disposition.risk_flags else ""
+    unstated = [f for f in disposition.risk_flags if f not in disposition.reason]
+    flags = f" Risk flag: {'; '.join(unstated)}." if unstated else ""
     return f"**{disposition.dispute_id}** · Disposition **{BADGE[disposition.outcome]}**: {disposition.reason}{flags} {anchor}"
 
 
-def counsel_post(dispute_id: str, recommendation: str, rebuttal: str, by_llm: bool, next_step: str) -> str:
-    source = "drafted by Claude" if by_llm else "template draft (no LLM key configured)"
-    return (f"**{dispute_id}** · {recommendation}\n\n> {rebuttal}\n\n_Rebuttal {source}; the evidence verdict and "
-            f"disposition above were decided in code, not by the model._ {next_step}")
+def counsel_post(dispute_id: str, recommendation: str, rebuttal: str, by_llm: bool, next_step: str, *,
+                 rejected: bool = False) -> str:
+    if rejected:
+        note = "Policy decision — rejected cases skip the model; no rebuttal needed."
+    else:
+        source = "drafted by Claude" if by_llm else "template draft (no LLM key configured)"
+        note = (f"Rebuttal {source}; the evidence verdict and disposition above were decided in code, "
+                f"not by the model.")
+    return f"**{dispute_id}** · {recommendation}\n\n> {rebuttal}\n\n_{note}_ {next_step}"
 
 
 def next_step(outcome: Outcome, dispute_id: str, lead: str) -> str:

@@ -9,6 +9,7 @@ import logging
 import os
 import re
 
+from disputedesk.ce3 import ELEMENT_LABELS
 from disputedesk.contracts import CE3Result, Dispute, Disposition, Outcome
 from disputedesk.policy import format_usd
 
@@ -24,7 +25,7 @@ DRAFT_SYSTEM = (
     "You are a chargeback analyst writing a Visa reason code 10.4 (card-not-present fraud) "
     "representment rebuttal under Compelling Evidence 3.0. Use ONLY the facts given. Do not invent "
     "transactions, dates, or identifiers. Do not restate or second-guess the qualification decision; "
-    "it was made deterministically. Write 4-6 sentences, plain and factual, addressed to the issuer."
+    "it was made deterministically. Name only the matched data elements listed in the facts; never say a prior transaction was on the same account unless account ID is listed. Call the payment credential \"the same card\". Write 4-6 sentences, plain and factual, addressed to the issuer."
 )
 INTENT_SYSTEM = (
     "Classify the FinOps lead's message about a chargeback case as exactly one word: "
@@ -80,8 +81,8 @@ def evidence_facts(dispute: Dispute, ce3: CE3Result) -> str:
     lines = [f"Dispute {dispute.dispute_id}: {format_usd(dispute.amount_cents)}, reason code "
              f"{dispute.reason_code}, merchant {dispute.merchant_id}, disputed txn {dispute.txn_id}."]
     for txn_id in ce3.matched_txns:
-        fields = ", ".join(ce3.matched_fields.get(txn_id, ()))
-        lines.append(f"Prior undisputed txn {txn_id} matches on: {fields}.")
+        fields = ", ".join(ELEMENT_LABELS[f] for f in ce3.matched_fields.get(txn_id, ()))
+        lines.append(f"Prior undisputed txn {txn_id} (same card, same merchant) matches on: {fields}.")
     lines.extend(ce3.reasons)
     return "\n".join(lines)
 

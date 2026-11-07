@@ -100,7 +100,7 @@ Requires Python ≥ 3.10 and `make`. Logic and tests need nothing else:
 ```bash
 cp .env.example .env
 make setup        # venv, pinned deps, generates AUDIT_HMAC_KEY, seeds demo cases A–E
-make test         # 344 tests, no network or API key
+make test         # 349 tests, no network or API key
 ```
 
 For the live Switch room you also need Docker. On Apple Silicon, the Mattermost image is amd64-only, so give Docker Rosetta, e.g. `colima start switch --vm-type vz --vz-rosetta`. You also need `oras`.
@@ -124,7 +124,7 @@ Optional: add `ANTHROPIC_API_KEY` to `.env` so @counsel drafts with Claude.
 - **SSE transport.** The agents use Switch's SSE event stream as specified. Switch now recommends WebSocket and marks SSE deprecated.
 - **No threads.** Posts go to the room root. The live `post_message` operation supports `thread_id` and the client implements it, but the demo doesn't use threads.
 - **The HMAC key is the trust boundary.** Whoever holds `AUDIT_HMAC_KEY` can forge approvals; agents and the LLM never see it. Deleting the newest audit rows is caught by comparing against the head hash posted in the room, not by the chain alone.
-- **Without `ANTHROPIC_API_KEY`,** @counsel uses a deterministic template. The demo transcript was recorded that way.
+- **Without `ANTHROPIC_API_KEY`,** @counsel uses a deterministic template. The demo transcript (`docs/demo-transcript.md`) was recorded live with Claude drafting.
 - **No YAML room template.** The room is created with the `create_room` operation instead.
 
 ## How it was built

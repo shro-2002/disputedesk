@@ -56,7 +56,8 @@ class Counsel:
         orch.save_rebuttal(conn, dispute_id, body, by_llm)
         self.done.add(dispute_id)
         post(self.client, text.counsel_post(dispute_id, counsel.recommendation(disposition), body, by_llm,
-                                            text.next_step(disposition.outcome, dispute_id, self.lead)))
+                                            text.next_step(disposition.outcome, dispute_id, self.lead),
+                                            rejected=disposition.outcome == Outcome.REJECT))
 
 
 def main(stop: threading.Event) -> None:
