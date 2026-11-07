@@ -55,6 +55,9 @@ class Evidence:
         return None  # @evidence acts on webhooks only; room chatter is context
 
 
+MAX_WEBHOOK_BYTES = 4096
+
+
 def webhook_server(agent: Evidence) -> ThreadingHTTPServer:
     class Handler(BaseHTTPRequestHandler):
         def do_POST(self) -> None:  # noqa: N802 (http.server API)
@@ -62,7 +65,12 @@ def webhook_server(agent: Evidence) -> ThreadingHTTPServer:
                 self.send_error(404)
                 return
             try:
-                body = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 4096)))
+                length = int(self.headers.get("Content-Length", ""))
+                if not 0 < length <= MAX_WEBHOOK_BYTES:  # read(-1) would read to EOF, unbounded
+                    raise ValueError(f"Content-Length must be 1..{MAX_WEBHOOK_BYTES}")
+                body = json.loads(self.rfile.read(length))
+                if not isinstance(body, dict):
+                    raise ValueError("body must be a JSON object")
                 dispute_id = str(body.get("dispute_id", ""))
                 if not DISPUTE_ID_RE.fullmatch(dispute_id):
                     raise ValueError("dispute_id must look like DSP-A")
