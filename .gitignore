@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+data/*.db
+data/*.db-*
+*.sqlite
+switch/credentials/
+*.key
+*.pem
+!data/.gitkeep
+server/.env
+server/*.yaml.bak

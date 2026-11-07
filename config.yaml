@@ -1,0 +1,5 @@
+# DisputeDesk policy config. SAFR-style disposition (MAS industry reference framework, July 2026 — a reference model, not regulation).
+auto_limit_usd: 500            # AUTO_EXECUTE ceiling; above it -> HUMAN_REVIEW
+risk_recent_dispute_count: 2   # >= this many other disputes by the customer...
+risk_window_days: 60           # ...within this many days -> PROCEED_FLAGGED
+finops_lead: "shroddha"        # display name of the FinOps lead (shown in the room). Authorization uses FINOPS_LEAD_SENDER_ID from .env.
